@@ -7,7 +7,6 @@ InSAR沉降监测Web可视化平台 - 主应用（优化版）
 """
 
 import streamlit as st
-import geopandas as gpd
 import pandas as pd
 import pydeck as pdk
 import numpy as np
@@ -22,13 +21,24 @@ from config.config import (
     PAGE_TITLE, PAGE_ICON, LAYOUT, MAP_VIEW_STATE,
     VELOCITY_THRESHOLDS, RISK_COLORS
 )
-from src.utils.spatial_analysis import calculate_road_risk
+
+# 可选导入 GeoPandas（用于空间分析）
+try:
+    import geopandas as gpd
+    HAS_GEOPANDAS = True
+except ImportError:
+    HAS_GEOPANDAS = False
+    gpd = None
+
+# 根据GeoPandas可用性导入功能
 from src.utils.ai_report import generate_insar_report
 from src.utils.data_import import (
     process_uploaded_file,
     get_file_template_info,
     create_sample_csv
 )
+if HAS_GEOPANDAS:
+    from src.utils.spatial_analysis import calculate_road_risk
 
 # ==================== 页面配置 ====================
 st.set_page_config(

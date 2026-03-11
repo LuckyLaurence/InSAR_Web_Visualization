@@ -32,9 +32,6 @@ env/
 *.swo
 *~
 
-# Streamlit
-.streamlit/
-
 # Cache
 cache/
 *.cache
