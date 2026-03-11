@@ -1,0 +1,4 @@
+gdal-bin
+proj-bin
+libgdal28
+python3-gdal
