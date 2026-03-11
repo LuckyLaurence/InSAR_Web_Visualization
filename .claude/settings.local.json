@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wsl.exe bash:*)"
+      "Bash(wsl.exe bash:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
