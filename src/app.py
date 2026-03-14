@@ -135,14 +135,78 @@ gdf_insar = None
 gdf_roads = None
 
 if data_source == "默认数据（北京）":
-    velocity_file = PROCESSED_DATA_DIR / "beijing_velocity_aggregated.shp"
-    road_file = EXTERNAL_DATA_DIR / "beijing_mock_roads.shp"
+    # 检查是否有 GeoPandas 和数据文件
+    has_local_data = HAS_GEOPANDAS and PROCESSED_DATA_DIR.exists() and (PROCESSED_DATA_DIR / "beijing_velocity_aggregated.shp").exists()
 
-    @st.cache_data
-    def load_insar_data(file_path):
-        """加载InSAR速度场数据"""
-        try:
-            gdf = gpd.read_file(file_path)
+    if has_local_data:
+        # 加载真实数据
+        velocity_file = PROCESSED_DATA_DIR / "beijing_velocity_aggregated.shp"
+        road_file = EXTERNAL_DATA_DIR / "beijing_mock_roads.shp"
+
+        @st.cache_data
+        def load_insar_data(file_path):
+            """加载InSAR速度场数据"""
+            try:
+                gdf = gpd.read_file(file_path)
+                if 'velocity' in gdf.columns:
+                    gdf['velocity_mean'] = gdf['velocity']
+                return gdf
+            except Exception as e:
+                st.error(f"数据加载失败: {e}")
+                return None
+
+        @st.cache_data
+        def load_road_data(file_path):
+            """加载路网数据"""
+            try:
+                return gpd.read_file(file_path)
+            except Exception as e:
+                st.error(f"路网加载失败: {e}")
+                return None
+
+        with st.spinner("正在加载数据..."):
+            gdf_insar = load_insar_data(velocity_file)
+            if road_file.exists():
+                gdf_roads = load_road_data(road_file)
+
+        st.success(f"✅ InSAR数据: {len(gdf_insar):,} 点")
+        if gdf_roads is not None:
+            st.success(f"✅ 路网数据: {len(gdf_roads)} 条")
+
+    else:
+        # 使用模拟数据（演示模式）
+        with st.spinner("正在生成演示数据..."):
+            # 模拟 InSAR 点数据
+            np.random.seed(42)
+            n_points = 1000
+
+            # 生成北京区域的随机点
+            data = {
+                'longitude': np.random.uniform(116.2, 116.6, n_points),
+                'latitude': np.random.uniform(39.8, 40.0, n_points),
+                'velocity': np.random.normal(-20, 50, n_points),  # 模拟沉降速率
+                'velocity_mean': np.random.normal(-20, 50, n_points)
+            }
+            gdf_insar = pd.DataFrame(data)
+
+            # 模拟路网数据（简化版，不用 GeoPandas）
+            roads_data = []
+            for i in range(5):
+                # 生成简单的道路线段
+                start_lon = np.random.uniform(116.3, 116.5)
+                start_lat = np.random.uniform(39.85, 39.95)
+                roads_data.append({
+                    'name': f'演示道路{i+1}',
+                    'path': [[start_lon, start_lat], [start_lon + 0.01, start_lat + 0.01]],
+                    'type': 'primary'
+                })
+            gdf_roads = pd.DataFrame(roads_data)
+
+        st.success(f"✅ 演示数据: {len(gdf_insar)} 点")
+        if not HAS_GEOPANDAS:
+            st.info("💡 演示模式（空间分析功能需要本地环境）")
+        else:
+            st.info("💡 演示模式（数据文件不在云端，请联系开发者添加）")
             if 'velocity' in gdf.columns:
                 gdf['velocity_mean'] = gdf['velocity']
             return gdf
