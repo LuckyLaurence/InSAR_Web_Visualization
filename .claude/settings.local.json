@@ -3,7 +3,12 @@
     "allow": [
       "Bash(wsl.exe bash:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(python3 -m py_compile src/app.py)",
+      "Bash(dos2unix src/app.py)",
+      "Bash(find src/ config/ -name \"*.py\" -exec file {})",
+      "Bash(git push:*)"
     ]
   }
 }

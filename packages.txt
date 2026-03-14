@@ -1,3 +1,0 @@
-# GeoPandas可选依赖（Streamlit Cloud可能不完全支持）
-# 注意：GeoPandas在Streamlit Cloud上可能无法正常工作
-# 应用已经设计为在没有GeoPandas的情况下以演示模式运行
