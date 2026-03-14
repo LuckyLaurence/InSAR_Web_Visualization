@@ -51,8 +51,9 @@ st.set_page_config(
 # ==================== 初始化Session State ====================
 def calculate_view_state(gdf):
     """根据数据范围计算合适的视图状态"""
-    lon_min, lon_max = gdf.longitude.min(), gdf.longitude.max()
-    lat_min, lat_max = gdf.latitude.min(), gdf.latitude.max()
+    # 兼容DataFrame和GeoDataFrame
+    lon_min, lon_max = gdf['longitude'].min(), gdf['longitude'].max()
+    lat_min, lat_max = gdf['latitude'].min(), gdf['latitude'].max()
 
     center_lon = (lon_min + lon_max) / 2
     center_lat = (lat_min + lat_max) / 2
@@ -267,12 +268,21 @@ if data_source == "默认数据（北京）" and gdf_roads is not None:
 
 # 主界面数据显示
 if gdf_insar is not None:
+    # 确定速度列名
     if 'velocity_mean' in gdf_insar.columns:
         velocity_col = 'velocity_mean'
     elif 'velocity' in gdf_insar.columns:
         velocity_col = 'velocity'
     else:
-        velocity_col = gdf_insar.columns[2]
+        # 尝试找到第一个数值列
+        numeric_cols = gdf_insar.select_dtypes(include=['number']).columns.tolist()
+        # 排除经纬度列
+        velocity_candidates = [col for col in numeric_cols if col not in ['longitude', 'latitude', 'lon', 'lat']]
+        if velocity_candidates:
+            velocity_col = velocity_candidates[0]
+        else:
+            st.error("❌ 数据中未找到速度列，请确保包含 'velocity' 或 'velocity_mean' 列")
+            st.stop()
 
     # ==================== 数据统计 ====================
     st.header("📈 数据统计")

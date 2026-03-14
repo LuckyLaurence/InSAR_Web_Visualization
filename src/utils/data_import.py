@@ -219,12 +219,16 @@ def process_uploaded_file(uploaded_file):
             if HAS_GEOPANDAS:
                 gdf = gpd.GeoDataFrame(
                     df,
-                    geometry=gpd.points_from_xy(df.longitude, df.latitude),
+                    geometry=gpd.points_from_xy(df['longitude'], df['latitude']),
                     crs="EPSG:4326"
                 )
             else:
                 # 没有GeoPandas时，返回DataFrame（不带几何信息）
-                return True, df, "数据加载成功（无GeoPandas，跳过几何信息生成）", None
+                # 验证数据
+                is_valid, error_msg, summary = validate_insar_data(df)
+                if not is_valid:
+                    return False, None, error_msg, None
+                return True, df, "数据加载成功（无GeoPandas，使用简化模式）", summary
 
         elif file_name.endswith('.geojson') or file_name.endswith('.json'):
             gdf = load_geojson_file(file_content)
@@ -234,12 +238,16 @@ def process_uploaded_file(uploaded_file):
             if HAS_GEOPANDAS:
                 gdf = gpd.GeoDataFrame(
                     df,
-                    geometry=gpd.points_from_xy(df.longitude, df.latitude),
+                    geometry=gpd.points_from_xy(df['longitude'], df['latitude']),
                     crs="EPSG:4326"
                 )
             else:
                 # 没有GeoPandas时，返回DataFrame（不带几何信息）
-                return True, df, "数据加载成功（无GeoPandas，跳过几何信息生成）", None
+                # 验证数据
+                is_valid, error_msg, summary = validate_insar_data(df)
+                if not is_valid:
+                    return False, None, error_msg, None
+                return True, df, "数据加载成功（无GeoPandas，使用简化模式）", summary
 
         elif file_name.endswith('.zip'):
             gdf = load_shapefile_zip(file_content)

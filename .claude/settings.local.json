@@ -8,7 +8,8 @@
       "Bash(python3 -m py_compile src/app.py)",
       "Bash(dos2unix src/app.py)",
       "Bash(find src/ config/ -name \"*.py\" -exec file {})",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(python3 -m py_compile src/utils/data_import.py)"
     ]
   }
 }
