@@ -10,13 +10,20 @@
 """
 
 import pandas as pd
-import geopandas as gpd
 import json
 from io import BytesIO
 from pathlib import Path
 import tempfile
 import os
 import zipfile
+
+# 可选导入 GeoPandas（用于空间数据格式支持）
+try:
+    import geopandas as gpd
+    HAS_GEOPANDAS = True
+except ImportError:
+    HAS_GEOPANDAS = False
+    gpd = None
 
 
 def validate_insar_data(df, required_cols=None):
@@ -95,6 +102,8 @@ def load_csv_file(file_content):
 
 def load_geojson_file(file_content):
     """加载GeoJSON文件"""
+    if not HAS_GEOPANDAS:
+        raise Exception("GeoJSON格式需要GeoPandas支持，请在requirements.txt中添加geopandas")
     try:
         gdf = gpd.read_file(file_content)
 
@@ -152,6 +161,8 @@ def load_excel_file(file_content):
 
 def load_shapefile_zip(zip_file_content):
     """加载Shapefile（ZIP格式）"""
+    if not HAS_GEOPANDAS:
+        raise Exception("Shapefile格式需要GeoPandas支持，请在requirements.txt中添加geopandas")
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
             # 解压ZIP文件
@@ -205,22 +216,30 @@ def process_uploaded_file(uploaded_file):
         # 根据文件扩展名选择加载方式
         if file_name.endswith('.csv'):
             df = load_csv_file(file_content)
-            gdf = gpd.GeoDataFrame(
-                df,
-                geometry=gpd.points_from_xy(df.longitude, df.latitude),
-                crs="EPSG:4326"
-            )
+            if HAS_GEOPANDAS:
+                gdf = gpd.GeoDataFrame(
+                    df,
+                    geometry=gpd.points_from_xy(df.longitude, df.latitude),
+                    crs="EPSG:4326"
+                )
+            else:
+                # 没有GeoPandas时，返回DataFrame（不带几何信息）
+                return True, df, "数据加载成功（无GeoPandas，跳过几何信息生成）", None
 
         elif file_name.endswith('.geojson') or file_name.endswith('.json'):
             gdf = load_geojson_file(file_content)
 
         elif file_name.endswith('.xlsx') or file_name.endswith('.xls'):
             df = load_excel_file(file_content)
-            gdf = gpd.GeoDataFrame(
-                df,
-                geometry=gpd.points_from_xy(df.longitude, df.latitude),
-                crs="EPSG:4326"
-            )
+            if HAS_GEOPANDAS:
+                gdf = gpd.GeoDataFrame(
+                    df,
+                    geometry=gpd.points_from_xy(df.longitude, df.latitude),
+                    crs="EPSG:4326"
+                )
+            else:
+                # 没有GeoPandas时，返回DataFrame（不带几何信息）
+                return True, df, "数据加载成功（无GeoPandas，跳过几何信息生成）", None
 
         elif file_name.endswith('.zip'):
             gdf = load_shapefile_zip(file_content)
@@ -259,6 +278,8 @@ def create_sample_csv():
 
 def create_sample_geojson():
     """创建示例GeoJSON数据"""
+    if not HAS_GEOPANDAS:
+        return create_sample_csv()
     df = create_sample_csv()
 
     gdf = gpd.GeoDataFrame(

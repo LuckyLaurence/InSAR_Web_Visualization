@@ -8,11 +8,18 @@
 3. 统计分析：按道路类型统计受影响程度
 """
 
-import geopandas as gpd
 import pandas as pd
 import numpy as np
 from pathlib import Path
 import sys
+
+# 可选导入 GeoPandas
+try:
+    import geopandas as gpd
+    HAS_GEOPANDAS = True
+except ImportError:
+    HAS_GEOPANDAS = False
+    gpd = None
 
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
