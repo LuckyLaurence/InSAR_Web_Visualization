@@ -207,26 +207,8 @@ if data_source == "默认数据（北京）":
             st.info("💡 演示模式（空间分析功能需要本地环境）")
         else:
             st.info("💡 演示模式（数据文件不在云端，请联系开发者添加）")
-            if 'velocity' in gdf.columns:
-                gdf['velocity_mean'] = gdf['velocity']
-            return gdf
-        except Exception as e:
-            st.error(f"数据加载失败: {e}")
-            return None
 
-    @st.cache_data
-    def load_road_data(file_path):
-        """加载路网数据"""
-        try:
-            return gpd.read_file(file_path)
-        except Exception as e:
-            st.error(f"路网加载失败: {e}")
-            return None
-
-    with st.spinner("正在加载数据..."):
-        gdf_insar = load_insar_data(velocity_file)
-        if road_file.exists():
-            gdf_roads = load_road_data(road_file)
+else:  # 上传数据
 
 else:  # 上传数据
     st.sidebar.markdown("---")
