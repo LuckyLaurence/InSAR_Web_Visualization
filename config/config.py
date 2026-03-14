@@ -14,10 +14,17 @@ RAW_DATA_DIR = DATA_DIR / "raw"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 EXTERNAL_DATA_DIR = DATA_DIR / "external"
 
-# Month2项目数据路径
-MONTH2_PROJECT = Path("F:/InSAR_WorkSpace/02_Projects/Project_Beijing")
-MONTH2_VELOCITY_FILE = MONTH2_PROJECT / "mintpy" / "geo" / "geo_velocity.h5"
-MONTH2_GEO_FILE = MONTH2_PROJECT / "mintpy" / "geo" / "geo_geometryRadar.h5"
+# Month2项目数据路径（仅本地环境可用）
+try:
+    # 尝试使用本地路径（Windows开发环境）
+    MONTH2_PROJECT = Path("F:/InSAR_WorkSpace/02_Projects/Project_Beijing")
+    MONTH2_VELOCITY_FILE = MONTH2_PROJECT / "mintpy" / "geo" / "geo_velocity.h5"
+    MONTH2_GEO_FILE = MONTH2_PROJECT / "mintpy" / "geo" / "geo_geometryRadar.h5"
+except:
+    # 云端环境或路径不存在时设置为None
+    MONTH2_PROJECT = None
+    MONTH2_VELOCITY_FILE = None
+    MONTH2_GEO_FILE = None
 
 # 输出目录
 OUTPUT_DIR = BASE_DIR / "output"

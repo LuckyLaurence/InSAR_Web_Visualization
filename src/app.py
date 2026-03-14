@@ -209,8 +209,6 @@ if data_source == "默认数据（北京）":
             st.info("💡 演示模式（数据文件不在云端，请联系开发者添加）")
 
 else:  # 上传数据
-
-else:  # 上传数据
     st.sidebar.markdown("---")
     st.sidebar.subheader("📁 上传数据文件")
 
