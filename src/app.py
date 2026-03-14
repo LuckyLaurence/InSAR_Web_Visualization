@@ -334,7 +334,7 @@ if gdf_insar is not None:
 
     # ==================== 道路风险分析 ====================
     roads_with_risk = None
-    if show_road_network and gdf_roads is not None and show_risk_grading:
+    if show_road_network and gdf_roads is not None and show_risk_grading and HAS_GEOPANDAS:
         with st.spinner("正在计算道路风险..."):
             roads_with_risk = calculate_road_risk(gdf_insar, gdf_roads, velocity_col)
 
@@ -407,12 +407,20 @@ if gdf_insar is not None:
             road_data = []
             road_table_data = []
             for idx, row in source_data.iterrows():
-                coords = list(row.geometry.coords)
-                coords_numeric = [[float(c[0]), float(c[1])] for c in coords]
-
-                # 计算道路中心点（用于标签）
-                center_idx = len(coords) // 2
-                center_lon, center_lat = coords[center_idx]
+                # 处理GeoPandas几何对象或演示数据
+                if hasattr(row, 'geometry') and hasattr(row.geometry, 'coords'):
+                    # GeoPandas GeoDataFrame
+                    coords = list(row.geometry.coords)
+                    coords_numeric = [[float(c[0]), float(c[1])] for c in coords]
+                    center_idx = len(coords) // 2
+                    center_lon, center_lat = coords[center_idx]
+                elif 'path' in row:
+                    # 演示数据（DataFrame，已有path列）
+                    coords_numeric = row['path']
+                    center_lon, center_lat = coords_numeric[0]
+                else:
+                    # 跳过无法处理的数据
+                    continue
 
                 # 风险等级颜色
                 risk_level = row.get('risk_level', 'unknown')
